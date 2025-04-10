@@ -78,7 +78,7 @@ pub mod voting {
         let cpi_ctx = CpiContext::new(cpi_program, transfer_cpi_accounts);
         let decimals = ctx.accounts.mint.decimals;
 
-        token_interface::transfer_checked(cpi_ctx, 1, decimals)?;
+        token_interface::transfer_checked(cpi_ctx, 10u64.pow(decimals as u32), decimals)?;
 
         candidate.candidate_votes += 1;
 
