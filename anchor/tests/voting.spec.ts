@@ -1,6 +1,6 @@
 import * as anchor from '@coral-xyz/anchor'
 import {Program} from '@coral-xyz/anchor'
-import {Keypair} from '@solana/web3.js'
+import {Keypair, LAMPORTS_PER_SOL, PublicKey, sendAndConfirmTransaction, SystemProgram, Transaction} from '@solana/web3.js'
 import {Voting} from '../target/types/voting'
 
 describe('voting', () => {
@@ -9,68 +9,90 @@ describe('voting', () => {
   anchor.setProvider(provider)
   const payer = provider.wallet as anchor.Wallet
 
+  const connection = provider.connection;
+
   const program = anchor.workspace.Voting as Program<Voting>
 
   const votingKeypair = Keypair.generate()
 
-  it('Initialize Voting', async () => {
+  it('Initialize Candidate', async () => {
     await program.methods
       .initialize()
+      .signers([payer.payer])
+      .rpc()
+      
+    const [candidateInfo] = PublicKey.findProgramAddressSync(
+      [payer.publicKey.toBuffer()],
+      program.programId
+    )
+
+    const currentCount = await program.account.candidate.fetch(candidateInfo);
+
+    expect(currentCount.authority).toEqual(payer.publicKey);
+
+    const instruction = SystemProgram.transfer({
+      fromPubkey: payer.publicKey,
+      toPubkey: votingKeypair.publicKey,
+      lamports: 10 * LAMPORTS_PER_SOL,
+    })
+
+    const transaction = new Transaction
+    transaction.add(instruction)
+    const signature = await sendAndConfirmTransaction(connection, transaction, [payer.payer]);
+  })
+
+  it('UpVoting', async () => {
+    const [candidateAccount] = PublicKey.findProgramAddressSync(
+      [payer.publicKey.toBuffer()],
+      program.programId
+    )
+
+    await program.methods
+      .upvote()
       .accounts({
-        voting: votingKeypair.publicKey,
-        payer: payer.publicKey,
+        candidateAccount,
+        signer: votingKeypair.publicKey
       })
       .signers([votingKeypair])
       .rpc()
 
-    const currentCount = await program.account.voting.fetch(votingKeypair.publicKey)
+      
+    const [candidateInfo] = PublicKey.findProgramAddressSync(
+      [payer.publicKey.toBuffer()],
+      program.programId
+    )
 
-    expect(currentCount.count).toEqual(0)
+    const currentCount = await program.account.candidate.fetch(candidateInfo);
+
+    console.log(currentCount.upvotes.toNumber());
+    expect(currentCount.upvotes.toNumber()).toEqual(1);
   })
 
-  it('Increment Voting', async () => {
-    await program.methods.increment().accounts({ voting: votingKeypair.publicKey }).rpc()
+  it('DownVoting', async () => {
 
-    const currentCount = await program.account.voting.fetch(votingKeypair.publicKey)
+    const [candidateAccount] = PublicKey.findProgramAddressSync(
+      [payer.publicKey.toBuffer()],
+      program.programId
+    )
 
-    expect(currentCount.count).toEqual(1)
-  })
-
-  it('Increment Voting Again', async () => {
-    await program.methods.increment().accounts({ voting: votingKeypair.publicKey }).rpc()
-
-    const currentCount = await program.account.voting.fetch(votingKeypair.publicKey)
-
-    expect(currentCount.count).toEqual(2)
-  })
-
-  it('Decrement Voting', async () => {
-    await program.methods.decrement().accounts({ voting: votingKeypair.publicKey }).rpc()
-
-    const currentCount = await program.account.voting.fetch(votingKeypair.publicKey)
-
-    expect(currentCount.count).toEqual(1)
-  })
-
-  it('Set voting value', async () => {
-    await program.methods.set(42).accounts({ voting: votingKeypair.publicKey }).rpc()
-
-    const currentCount = await program.account.voting.fetch(votingKeypair.publicKey)
-
-    expect(currentCount.count).toEqual(42)
-  })
-
-  it('Set close the voting account', async () => {
     await program.methods
-      .close()
+      .downvote()
       .accounts({
-        payer: payer.publicKey,
-        voting: votingKeypair.publicKey,
+        candidateAccount,
+        signer: votingKeypair.publicKey
       })
+      .signers([votingKeypair])
       .rpc()
 
-    // The account should no longer exist, returning null.
-    const userAccount = await program.account.voting.fetchNullable(votingKeypair.publicKey)
-    expect(userAccount).toBeNull()
+      
+    const [candidateInfo] = PublicKey.findProgramAddressSync(
+      [payer.publicKey.toBuffer()],
+      program.programId
+    )
+
+    const currentCount = await program.account.candidate.fetch(candidateInfo);
+
+    console.log(currentCount.downvotes.toNumber());
+    expect(currentCount.downvotes.toNumber()).toEqual(1);
   })
 })

@@ -1,22 +1,32 @@
 'use client'
 
 import { Keypair, PublicKey } from '@solana/web3.js'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { ellipsify } from '../ui/ui-layout'
 import { ExplorerLink } from '../cluster/cluster-ui'
 import { useVotingProgram, useVotingProgramAccount } from './voting-data-access'
 
 export function VotingCreate() {
   const { initialize } = useVotingProgram()
+  const [candidateName, setCandidateName] = useState("");
 
   return (
-    <button
-      className="btn btn-xs lg:btn-md btn-primary"
-      onClick={() => initialize.mutateAsync(Keypair.generate())}
-      disabled={initialize.isPending}
-    >
-      Create {initialize.isPending && '...'}
-    </button>
+    <div>
+      <input
+        type="text"
+        placeholder='Candidate Name'
+        value={candidateName}
+        onChange={(e) => { setCandidateName(e.target.value) }}
+        className='input input-bordered w-full max max-w-xs'
+      />
+      <button
+        className="btn btn-xs lg:btn-md btn-primary"
+        onClick={() => initialize.mutateAsync({ candidateName })}
+        disabled={initialize.isPending}
+      >
+        Create {initialize.isPending && '...'}
+      </button>
+    </div>
   )
 }
 
@@ -54,11 +64,12 @@ export function VotingList() {
 }
 
 function VotingCard({ account }: { account: PublicKey }) {
-  const { accountQuery, incrementMutation, setMutation, decrementMutation, closeMutation } = useVotingProgramAccount({
+  const { accountQuery, upvoteMutation } = useVotingProgramAccount({
     account,
   })
 
-  const count = useMemo(() => accountQuery.data?.count ?? 0, [accountQuery.data?.count])
+  const upvotes = useMemo(() => accountQuery.data?.votes ?? 0, [accountQuery.data?.votes]);
+  const candidate = useMemo(() => accountQuery.data?.name ?? 0, [accountQuery.data?.name]);
 
   return accountQuery.isLoading ? (
     <span className="loading loading-spinner loading-lg"></span>
@@ -67,52 +78,18 @@ function VotingCard({ account }: { account: PublicKey }) {
       <div className="card-body items-center text-center">
         <div className="space-y-6">
           <h2 className="card-title justify-center text-3xl cursor-pointer" onClick={() => accountQuery.refetch()}>
-            {count}
+            {candidate.toString()}
+          </h2>
+          <h2 className="card-title justify-center text-3xl cursor-pointer" onClick={() => accountQuery.refetch()}>
+            Votes: {upvotes.toString()}
           </h2>
           <div className="card-actions justify-around">
             <button
               className="btn btn-xs lg:btn-md btn-outline"
-              onClick={() => incrementMutation.mutateAsync()}
-              disabled={incrementMutation.isPending}
+              onClick={() => upvoteMutation.mutateAsync()}
+              disabled={upvoteMutation.isPending}
             >
-              Increment
-            </button>
-            <button
-              className="btn btn-xs lg:btn-md btn-outline"
-              onClick={() => {
-                const value = window.prompt('Set value to:', count.toString() ?? '0')
-                if (!value || parseInt(value) === count || isNaN(parseInt(value))) {
-                  return
-                }
-                return setMutation.mutateAsync(parseInt(value))
-              }}
-              disabled={setMutation.isPending}
-            >
-              Set
-            </button>
-            <button
-              className="btn btn-xs lg:btn-md btn-outline"
-              onClick={() => decrementMutation.mutateAsync()}
-              disabled={decrementMutation.isPending}
-            >
-              Decrement
-            </button>
-          </div>
-          <div className="text-center space-y-4">
-            <p>
-              <ExplorerLink path={`account/${account}`} label={ellipsify(account.toString())} />
-            </p>
-            <button
-              className="btn btn-xs btn-secondary btn-outline"
-              onClick={() => {
-                if (!window.confirm('Are you sure you want to close this account?')) {
-                  return
-                }
-                return closeMutation.mutateAsync()
-              }}
-              disabled={closeMutation.isPending}
-            >
-              Close
+              Vote
             </button>
           </div>
         </div>
