@@ -1,5 +1,5 @@
 {
-  "address": "6qB1hyXVjgckRk9dqvK2CQPCvzwGNi5NDWx28AzF72Fx",
+  "address": "JCGneMMfiJz3fFHhbTPmwwgBBkZ5MkXz413gv6AydR5y",
   "metadata": {
     "name": "voting",
     "version": "0.1.0",
@@ -184,7 +184,10 @@
                 "path": "poll_id"
               }
             ]
-          }
+          },
+          "relations": [
+            "candidate"
+          ]
         },
         {
           "name": "candidate",
@@ -398,6 +401,10 @@
           {
             "name": "candidate_votes",
             "type": "u64"
+          },
+          {
+            "name": "poll",
+            "type": "pubkey"
           }
         ]
       }

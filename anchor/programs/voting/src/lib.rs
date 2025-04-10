@@ -4,7 +4,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::associated_token::AssociatedToken;
 use anchor_spl::token_interface::{ self, Mint, TokenAccount, TokenInterface, TransferChecked };
 
-declare_id!("6qB1hyXVjgckRk9dqvK2CQPCvzwGNi5NDWx28AzF72Fx");
+declare_id!("JCGneMMfiJz3fFHhbTPmwwgBBkZ5MkXz413gv6AydR5y");
 
 #[program]
 pub mod voting {
@@ -41,6 +41,7 @@ pub mod voting {
         poll.candidate_amount += 1;
         candidate.candidate_name = candidate_name;
         candidate.candidate_votes = 0;
+        candidate.poll = poll.key();
 
         Ok(())
     }
@@ -145,7 +146,8 @@ pub struct Vote<'info> {
     #[account(
         mut,
         seeds = [poll_id.to_le_bytes().as_ref(), candidate_name.as_bytes()],
-        bump
+        bump,
+        has_one = poll,
     )]
     pub candidate: Account<'info, Candidate>,
 
@@ -188,6 +190,7 @@ pub struct Candidate {
     #[max_len(32)]
     pub candidate_name: String,
     pub candidate_votes: u64,
+    pub poll: Pubkey,
 }
 
 #[error_code]
@@ -199,4 +202,3 @@ pub enum ErrorCode {
     #[msg("Invalid mint address")]
     InvalidMintAddress,
 }
-    

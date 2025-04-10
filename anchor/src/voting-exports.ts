@@ -21,7 +21,7 @@ export function getVotingProgramId(cluster: Cluster) {
     case 'devnet':
     case 'testnet':
       // This is the program ID for the Voting program on devnet and testnet.
-      return new PublicKey('6qB1hyXVjgckRk9dqvK2CQPCvzwGNi5NDWx28AzF72Fx')
+      return new PublicKey('JCGneMMfiJz3fFHhbTPmwwgBBkZ5MkXz413gv6AydR5y')
     case 'mainnet-beta':
     default:
       return VOTING_PROGRAM_ID

@@ -90,8 +90,17 @@ describe('voting', () => {
 
     const candidateInfo = await program.account.candidate.fetch(candidateAddress);
 
+    const [pollAddress] = PublicKey.findProgramAddressSync(
+      [Buffer.from("poll"), new anchor.BN(pollId).toBuffer("le", 8)],
+      program.programId
+    );
+
+    const pollInfo = await program.account.poll.fetch(pollAddress);
+    console.log(pollInfo);
+
     console.log(candidateInfo);
     expect(candidateInfo.candidateName).toEqual("Farman");
+    expect(candidateInfo.poll).toEqual(pollAddress);
   })
 
   it('Voting', async () => {
