@@ -1,7 +1,7 @@
 'use client'
 
 import { PublicKey } from '@solana/web3.js'
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useVotingProgram, usePollProgramAccount, useCandidateProgramAccount, useTopCandidatesForPoll } from './voting-data-access'
 
 export function PollList() {
@@ -39,9 +39,25 @@ function VotingCard({ account }: { account: PublicKey }) {
   const description = useMemo(() => pollAccountQuery.data?.description ?? '', [pollAccountQuery.data?.description])
   const id = useMemo(() => pollAccountQuery.data?.pollId?.toString() ?? '', [pollAccountQuery.data?.pollId])
 
+
+  function useIsMobile() {
+    const [isMobile, setIsMobile] = useState(false)
+
+    useEffect(() => {
+      const checkScreen = () => setIsMobile(window.innerWidth < 768)
+      checkScreen()
+      window.addEventListener('resize', checkScreen)
+      return () => window.removeEventListener('resize', checkScreen)
+    }, [])
+
+    return isMobile
+  }
+
+  const isMobile = useIsMobile()
+
   const topCandidates = useTopCandidatesForPoll({
     candidates: candidateAccountsQuery.data,
-    limit: 3,
+    limit: isMobile ? 2 : 3,
   })
 
   return pollAccountQuery.isLoading ? (
