@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react'
 import { useParams } from 'next/navigation'
-import { getPollAddressById, usePollProgramAccount, useVotingProgram } from './voting-data-access'
+import { useGetPollAddressById, usePollProgramAccount, useVotingProgram } from './voting-data-access'
 
 export default function PollDetailFeature() {
     const params = useParams()
@@ -16,11 +16,8 @@ export default function PollDetailFeature() {
             console.log(`Invalid public key`, e)
         }
     }, [params])
-    if (!id) {
-        return <div>Error loading account</div>
-    }
 
-    const { pollAccountQuery, candidateAccountsQuery } = usePollProgramAccount({ account: getPollAddressById(Number(id)) })
+    const { pollAccountQuery, candidateAccountsQuery } = usePollProgramAccount({ account: useGetPollAddressById(Number(id)) })
     const { voteMutation } = useVotingProgram();
 
     const candidates = useMemo(() => {

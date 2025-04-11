@@ -148,7 +148,7 @@ export function useTopCandidatesForPoll({
   }, [candidates, limit])
 }
 
-export function getPollAddressById(pollId: number): PublicKey {
+export function useGetPollAddressById(pollId: number): PublicKey {
 
   const { programId } = useVotingProgram()
 
