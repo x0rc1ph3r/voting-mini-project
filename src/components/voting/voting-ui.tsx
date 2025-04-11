@@ -52,7 +52,7 @@ function VotingCard({ account }: { account: PublicKey }) {
       className="border border-cyan-500/20 rounded-xl p-4 text-center no-underline flex flex-col justify-start bg-black/30 shadow-md hover:shadow-cyan-400/40 transition-all"
     >
       <h2 className="text-xl my-2 text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]">
-        {description + id || 'Unnamed Poll'}
+        {description || 'Unnamed Poll'}
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 justify-items-center mt-4">
         {topCandidates.map((c, i) => (

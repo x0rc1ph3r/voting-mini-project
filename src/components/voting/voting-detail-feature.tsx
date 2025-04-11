@@ -2,8 +2,7 @@
 
 import { useMemo } from 'react'
 import { useParams } from 'next/navigation'
-import { getPollAddressById, usePollProgramAccount } from './voting-data-access'
-import { PublicKey } from '@solana/web3.js'
+import { getPollAddressById, usePollProgramAccount, useVotingProgram } from './voting-data-access'
 
 export default function PollDetailFeature() {
     const params = useParams()
@@ -22,29 +21,45 @@ export default function PollDetailFeature() {
     }
 
     const { pollAccountQuery, candidateAccountsQuery } = usePollProgramAccount({ account: getPollAddressById(Number(id)) })
+    const { voteMutation } = useVotingProgram();
+
+    const candidates = useMemo(() => {
+        return candidateAccountsQuery.data
+            ?.map((c, index) => ({
+                name: c.account.candidateName || `Candidate ${index + 1}`,
+                votes: Number(c.account.candidateVotes || 0),
+                image: c.account.candidateImage || `/candidate${index + 1}.png`,
+                symbol: c.account.symbolImage || `/symbol${index + 1}.png`,
+                party: c.account.party || `Party ${index + 1}`,
+            }))
+            .sort((a, b) => b.votes - a.votes) || []
+    }, [candidateAccountsQuery.data])
+
+    const maxVotes = useMemo(() => pollAccountQuery.data?.totalVotes?.toNumber() ?? 100, [pollAccountQuery.data?.totalVotes])
 
     return (
         <div className="flex flex-col md:flex-row min-h-screen p-6 text-cyan-400 text-shadow">
             {/* Left Panel */}
             <div className="w-full md:w-2/3 md:pr-5">
-                <h1 className="text-white text-3xl text-center mb-5">Legislative Assembly Election</h1>
+                <h1 className="text-white text-3xl text-center mb-5">{pollAccountQuery.data?.description || 'Election'}</h1>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {[1, 2, 3, 4].map((num) => (
-                        <div key={num} className="border-2 border-cyan-400 rounded-xl h-[220px] flex items-center justify-center text-lg">
+                    {candidates.map((c, i) => (
+                        <div key={i} className="border-2 border-cyan-400 rounded-xl h-[220px] flex items-center justify-center text-lg">
                             <div className="flex w-full justify-between px-3">
                                 <div className="flex flex-col items-center w-1/4">
-                                    <img src={`/candidate${num}.png`} alt={`Candidate ${num}`} className="w-[90%] rounded-xl border border-cyan-400 bg-black/40 hover:-translate-y-1 transition duration-300 shadow-md" />
-                                    <p className="text-white text-sm mt-1">Candidate {num} Name</p>
+                                    <img src={c.image} alt={`Candidate ${i + 1}`} className="w-[90%] rounded-xl border border-cyan-400 bg-black/40 hover:-translate-y-1 transition duration-300 shadow-md" />
+                                    <p className="text-white text-sm mt-1">{c.name}</p>
                                 </div>
                                 <div className="flex flex-col items-center w-1/4">
-                                    <img src={`/symbol${num}.png`} alt={`Symbol ${num}`} className="w-[90%] rounded-xl border border-cyan-400 bg-black/40 hover:-translate-y-1 transition duration-300 shadow-md" />
-                                    <p className="text-white text-sm mt-1">Symbol {num}</p>
+                                    <img src={c.symbol} alt={`Symbol ${i + 1}`} className="w-[90%] rounded-xl border border-cyan-400 bg-black/40 hover:-translate-y-1 transition duration-300 shadow-md" />
+                                    <p className="text-white text-sm mt-1">Symbol</p>
                                 </div>
                                 <div className="flex flex-col justify-between text-left pl-5 flex-1">
-                                    <h3 className="text-cyan-300 pt-3 text-lg">Party {num} Name</h3>
-                                    <p className="text-gray-300">No.of Votes: {[12, 32, 41, 19][num - 1]} votes</p>
-                                    <button className="w-fit mt-2 px-4 py-1 bg-cyan-400 text-black font-bold rounded-md hover:-translate-y-1 hover:shadow-[0_0_10px_#00e6e6] transition">Vote</button>
+                                    <h3 className="text-cyan-300 pt-3 text-lg">{c.party}</h3>
+                                    <p className="text-gray-300">No.of Votes: {c.votes} votes</p>
+                                    <button className="w-fit mt-2 px-4 py-1 bg-cyan-400 text-black font-bold rounded-md hover:-translate-y-1 hover:shadow-[0_0_10px_#00e6e6] transition"
+                                    onClick={() => voteMutation.mutateAsync({candidateName: c.name, pollId: Number(id), mint: "24MejQPSucVCS9gvuJ9TZ1RVvPV3ErnyVpJrD4kggNRf"})} >Vote</button>
                                 </div>
                             </div>
                         </div>
@@ -60,24 +75,23 @@ export default function PollDetailFeature() {
                     <div className="w-full max-w-md space-y-6">
                         <h1 className="text-white text-5xl text-center">Results</h1>
 
-                        {[
-                            { name: 'Candidate A', percent: 90 },
-                            { name: 'Candidate B', percent: 60 },
-                            { name: 'Candidate C', percent: 75 },
-                            { name: 'Candidate D', percent: 85 }
-                        ].map((item, i) => (
-                            <div key={i} className="space-y-1">
-                                <span className="text-white text-sm">{item.name}</span>
-                                <div className="w-full h-5 bg-gray-800 border border-cyan-400 rounded-full overflow-hidden">
-                                    <div className="h-full bg-cyan-400 transition-all duration-500" style={{ width: `${item.percent}%` }}></div>
+                        {candidates.map((candidate, index) => {
+                            const percent = Math.round((candidate.votes / maxVotes) * 100)
+                            return (
+                                <div key={index} className="space-y-1">
+                                    <span className="text-white text-sm">{candidate.name}</span>
+                                    <div className="w-full h-5 bg-gray-800 border border-cyan-400 rounded-full overflow-hidden">
+                                        <div
+                                            className="h-full bg-cyan-400 transition-all duration-500"
+                                            style={{ width: `${percent}%` }}
+                                        />
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            )
+                        })}
                     </div>
                 </div>
             </div>
         </div>
-
-
     )
 }

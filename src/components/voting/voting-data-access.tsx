@@ -153,7 +153,7 @@ export function getPollAddressById(pollId: number): PublicKey {
   const { programId } = useVotingProgram()
 
   const [pollAddress] = PublicKey.findProgramAddressSync(
-    [Buffer.from("poll"), new anchor.BN(pollId).toBuffer("le", 8)],
+    [Buffer.from("poll"), new anchor.BN(pollId).toArrayLike(Buffer, "le", 8)],
     programId
   );
   return pollAddress
