@@ -1,5 +1,5 @@
 {
-  "address": "JCGneMMfiJz3fFHhbTPmwwgBBkZ5MkXz413gv6AydR5y",
+  "address": "4YXWXCiQqphgZPJrAEVvTehDGnn2kpRsYjw4W3ui4mT9",
   "metadata": {
     "name": "voting",
     "version": "0.1.0",
@@ -75,6 +75,18 @@
         {
           "name": "_poll_id",
           "type": "u64"
+        },
+        {
+          "name": "party",
+          "type": "string"
+        },
+        {
+          "name": "candidate_image",
+          "type": "string"
+        },
+        {
+          "name": "symbol_image",
+          "type": "string"
         }
       ]
     },
@@ -168,6 +180,7 @@
         },
         {
           "name": "poll",
+          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -395,7 +408,15 @@
         "kind": "struct",
         "fields": [
           {
+            "name": "poll",
+            "type": "pubkey"
+          },
+          {
             "name": "candidate_name",
+            "type": "string"
+          },
+          {
+            "name": "candidate_image",
             "type": "string"
           },
           {
@@ -403,8 +424,12 @@
             "type": "u64"
           },
           {
-            "name": "poll",
-            "type": "pubkey"
+            "name": "party",
+            "type": "string"
+          },
+          {
+            "name": "symbol_image",
+            "type": "string"
           }
         ]
       }
@@ -432,6 +457,10 @@
           },
           {
             "name": "candidate_amount",
+            "type": "u64"
+          },
+          {
+            "name": "total_votes",
             "type": "u64"
           },
           {

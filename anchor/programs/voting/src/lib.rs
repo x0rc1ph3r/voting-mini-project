@@ -4,7 +4,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::associated_token::AssociatedToken;
 use anchor_spl::token_interface::{ self, Mint, TokenAccount, TokenInterface, TransferChecked };
 
-declare_id!("JCGneMMfiJz3fFHhbTPmwwgBBkZ5MkXz413gv6AydR5y");
+declare_id!("4YXWXCiQqphgZPJrAEVvTehDGnn2kpRsYjw4W3ui4mT9");
 
 #[program]
 pub mod voting {
@@ -25,6 +25,7 @@ pub mod voting {
         poll.poll_start = poll_start;
         poll.poll_end = poll_end;
         poll.candidate_amount = 0;
+        poll.total_votes = 0;
         poll.mint_address = mint_address;
 
         Ok(())
@@ -34,14 +35,20 @@ pub mod voting {
         ctx: Context<InitialzeCandidate>,
         candidate_name: String,
         _poll_id: u64,
+        party: String,
+        candidate_image: String,
+        symbol_image: String,
     ) -> Result<()> {
         let candidate = &mut ctx.accounts.candidate;
         let poll = &mut ctx.accounts.poll;
 
         poll.candidate_amount += 1;
-        candidate.candidate_name = candidate_name;
-        candidate.candidate_votes = 0;
         candidate.poll = poll.key();
+        candidate.candidate_name = candidate_name;
+        candidate.party = party;
+        candidate.candidate_image = candidate_image;
+        candidate.symbol_image = symbol_image;
+        candidate.candidate_votes = 0;
 
         Ok(())
     }
@@ -82,6 +89,7 @@ pub mod voting {
         token_interface::transfer_checked(cpi_ctx, 10u64.pow(decimals as u32), decimals)?;
 
         candidate.candidate_votes += 1;
+        pollacc.total_votes += 1;
 
         Ok(())
     }
@@ -138,6 +146,7 @@ pub struct Vote<'info> {
     pub mint: InterfaceAccount<'info, Mint>,
 
     #[account(
+        mut,
         seeds = [b"poll".as_ref(), poll_id.to_le_bytes().as_ref()],
         bump
     )]
@@ -181,16 +190,23 @@ pub struct Poll {
     pub poll_start: u64,
     pub poll_end: u64,
     pub candidate_amount: u64,
+    pub total_votes: u64,
     pub mint_address: Pubkey,
 }
 
 #[account]
 #[derive(InitSpace)]
 pub struct Candidate {
+    pub poll: Pubkey,
     #[max_len(32)]
     pub candidate_name: String,
+    #[max_len(280)]
+    pub candidate_image: String,
     pub candidate_votes: u64,
-    pub poll: Pubkey,
+    #[max_len(32)]
+    pub party: String,
+    #[max_len(280)]
+    pub symbol_image: String,
 }
 
 #[error_code]

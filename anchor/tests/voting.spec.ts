@@ -79,7 +79,7 @@ describe('voting', () => {
 
   it('Initialize candidate', async () => {
     await program.methods
-      .initializeCandidate("Farman", new anchor.BN(pollId))
+      .initializeCandidate("Farman", new anchor.BN(pollId), "RGUKT", "", "")
       .signers([payer.payer])
       .rpc()
 

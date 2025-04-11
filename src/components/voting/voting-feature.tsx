@@ -5,7 +5,7 @@ import { WalletButton } from '../solana/solana-provider'
 import { AppHero, ellipsify } from '../ui/ui-layout'
 import { ExplorerLink } from '../cluster/cluster-ui'
 import { useVotingProgram } from './voting-data-access'
-import { VotingCreate, VotingList } from './voting-ui'
+import { PollList } from './voting-ui'
 
 export default function VotingFeature() {
   const { publicKey } = useWallet()
@@ -13,18 +13,7 @@ export default function VotingFeature() {
 
   return publicKey ? (
     <div>
-      <AppHero
-        title="Voting"
-        subtitle={
-          'Create a new account by clicking the "Create" button. The state of a account is stored on-chain and can be manipulated by calling the program\'s methods (increment, decrement, set, and close).'
-        }
-      >
-        <p className="mb-6">
-          <ExplorerLink path={`account/${programId}`} label={ellipsify(programId.toString())} />
-        </p>
-        <VotingCreate />
-      </AppHero>
-      <VotingList />
+      <PollList />
     </div>
   ) : (
     <div className="max-w-4xl mx-auto">

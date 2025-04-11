@@ -1,37 +1,11 @@
 'use client'
 
-import { Keypair, PublicKey } from '@solana/web3.js'
-import { useMemo, useState } from 'react'
-import { ellipsify } from '../ui/ui-layout'
-import { ExplorerLink } from '../cluster/cluster-ui'
-import { useVotingProgram, useVotingProgramAccount } from './voting-data-access'
+import { PublicKey } from '@solana/web3.js'
+import { useMemo } from 'react'
+import { useVotingProgram, usePollProgramAccount, useCandidateProgramAccount, useTopCandidatesForPoll } from './voting-data-access'
 
-export function VotingCreate() {
-  const { initialize } = useVotingProgram()
-  const [candidateName, setCandidateName] = useState("");
-
-  return (
-    <div>
-      <input
-        type="text"
-        placeholder='Candidate Name'
-        value={candidateName}
-        onChange={(e) => { setCandidateName(e.target.value) }}
-        className='input input-bordered w-full max max-w-xs'
-      />
-      <button
-        className="btn btn-xs lg:btn-md btn-primary"
-        onClick={() => initialize.mutateAsync({ candidateName })}
-        disabled={initialize.isPending}
-      >
-        Create {initialize.isPending && '...'}
-      </button>
-    </div>
-  )
-}
-
-export function VotingList() {
-  const { accounts, getProgramAccount } = useVotingProgram()
+export function PollList() {
+  const { pollAccounts, getProgramAccount } = useVotingProgram()
 
   if (getProgramAccount.isLoading) {
     return <span className="loading loading-spinner loading-lg"></span>
@@ -43,57 +17,74 @@ export function VotingList() {
       </div>
     )
   }
+
   return (
-    <div className={'space-y-6'}>
-      {accounts.isLoading ? (
-        <span className="loading loading-spinner loading-lg"></span>
-      ) : accounts.data?.length ? (
-        <div className="grid md:grid-cols-2 gap-4">
-          {accounts.data?.map((account) => (
+    <div className="text-white p-6">
+      <h3 className="text-center text-3xl mb-5 text-white/80">Live Results</h3>
+
+      <div className='flex justify-center'>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 px-5">
+          {pollAccounts.data?.map((account) => (
             <VotingCard key={account.publicKey.toString()} account={account.publicKey} />
           ))}
         </div>
-      ) : (
-        <div className="text-center">
-          <h2 className={'text-2xl'}>No accounts</h2>
-          No accounts found. Create one above to get started.
-        </div>
-      )}
+      </div>
     </div>
   )
 }
 
 function VotingCard({ account }: { account: PublicKey }) {
-  const { accountQuery, upvoteMutation } = useVotingProgramAccount({
-    account,
+  const { pollAccountQuery, candidateAccountsQuery } = usePollProgramAccount({ account })
+
+  const description = useMemo(() => pollAccountQuery.data?.description ?? '', [pollAccountQuery.data?.description])
+  const id = useMemo(() => pollAccountQuery.data?.pollId?.toString() ?? '', [pollAccountQuery.data?.pollId])
+
+  const topCandidates = useTopCandidatesForPoll({
+    candidates: candidateAccountsQuery.data,
+    limit: 3,
   })
 
-  const upvotes = useMemo(() => accountQuery.data?.votes ?? 0, [accountQuery.data?.votes]);
-  const candidate = useMemo(() => accountQuery.data?.name ?? 0, [accountQuery.data?.name]);
-
-  return accountQuery.isLoading ? (
+  return pollAccountQuery.isLoading ? (
     <span className="loading loading-spinner loading-lg"></span>
   ) : (
-    <div className="card card-bordered border-base-300 border-4 text-neutral-content">
-      <div className="card-body items-center text-center">
-        <div className="space-y-6">
-          <h2 className="card-title justify-center text-3xl cursor-pointer" onClick={() => accountQuery.refetch()}>
-            {candidate.toString()}
-          </h2>
-          <h2 className="card-title justify-center text-3xl cursor-pointer" onClick={() => accountQuery.refetch()}>
-            Votes: {upvotes.toString()}
-          </h2>
-          <div className="card-actions justify-around">
-            <button
-              className="btn btn-xs lg:btn-md btn-outline"
-              onClick={() => upvoteMutation.mutateAsync()}
-              disabled={upvoteMutation.isPending}
-            >
-              Vote
-            </button>
-          </div>
-        </div>
+    <a
+      href={`/poll/${id}`}
+      className="border border-cyan-500/20 rounded-xl p-4 text-center no-underline flex flex-col justify-start bg-black/30 shadow-md hover:shadow-cyan-400/40 transition-all"
+    >
+      <h2 className="text-xl my-2 text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]">
+        {description + id || 'Unnamed Poll'}
+      </h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 justify-items-center mt-4">
+        {topCandidates.map((c, i) => (
+          <CandidateCard key={i} i={i} account={c.publicKey} />
+        ))}
       </div>
+    </a>
+  )
+}
+
+function CandidateCard({ i, account }: { i: number, account: PublicKey }) {
+
+  const { candidateAccountQuery } = useCandidateProgramAccount({ account })
+
+  const candidateImage = useMemo(() => candidateAccountQuery.data?.candidateImage ?? '', [candidateAccountQuery.data?.candidateImage])
+  const candidateName = useMemo(() => candidateAccountQuery.data?.candidateName ?? '', [candidateAccountQuery.data?.candidateName])
+  const candidateVotes = useMemo(() => candidateAccountQuery.data?.candidateVotes.toString() ?? '', [candidateAccountQuery.data?.candidateVotes])
+
+  return candidateAccountQuery.isLoading ? (
+    <span className="loading loading-spinner loading-lg"></span>
+  ) : (
+    <div
+      key={i}
+      className="bg-black/40 border-2 border-cyan-400 rounded-2xl p-4 w-full max-w-[160px] text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_10px_rgb(16,196,255)]"
+    >
+      <img
+        src={candidateImage || `/candidate${i + 1}.png`}
+        alt={`Candidate ${i}`}
+        className="mx-auto w-20 h-20 rounded-full object-cover border-2 border-cyan-400 mt-1 mb-2"
+      />
+      <h4 className="text-sm text-[#b6a2a2] mb-1">{candidateName}</h4>
+      <p className="text-sm text-white/80">{candidateVotes.toString()} votes</p>
     </div>
   )
 }
