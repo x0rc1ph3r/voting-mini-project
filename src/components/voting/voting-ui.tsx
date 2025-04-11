@@ -54,7 +54,7 @@ function VotingCard({ account }: { account: PublicKey }) {
       <h2 className="text-xl my-2 text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]">
         {description || 'Unnamed Poll'}
       </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 justify-items-center mt-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-4 justify-items-center mt-4">
         {topCandidates.map((c, i) => (
           <CandidateCard key={i} i={i} account={c.publicKey} />
         ))}
