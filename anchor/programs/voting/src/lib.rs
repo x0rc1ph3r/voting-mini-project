@@ -4,7 +4,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::associated_token::AssociatedToken;
 use anchor_spl::token_interface::{ self, Mint, TokenAccount, TokenInterface, TransferChecked };
 
-declare_id!("4YXWXCiQqphgZPJrAEVvTehDGnn2kpRsYjw4W3ui4mT9");
+declare_id!("DqmZ5z1C34ou3pjfWtb6yuPYhQg7oE3dFCvtwuSvN27g");
 
 #[program]
 pub mod voting {
