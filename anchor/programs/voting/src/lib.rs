@@ -63,11 +63,11 @@ pub mod voting {
         let mintaddr = &ctx.accounts.mint;
         let current_time = Clock::get()?.unix_timestamp;
 
-        if current_time > (pollacc.poll_end as i64) {
+        if current_time >= (pollacc.poll_end as i64) {
             return Err(ErrorCode::VotingEnded.into());
         }
 
-        if current_time <= (pollacc.poll_start as i64) {
+        if current_time < (pollacc.poll_start as i64) {
             return Err(ErrorCode::VotingNotStarted.into());
         }
 
