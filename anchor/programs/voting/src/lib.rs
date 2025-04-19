@@ -3,8 +3,11 @@
 use anchor_lang::prelude::*;
 use anchor_spl::associated_token::AssociatedToken;
 use anchor_spl::token_interface::{ self, Mint, TokenAccount, TokenInterface, TransferChecked };
+use anchor_lang::solana_program::pubkey;
 
-declare_id!("DqmZ5z1C34ou3pjfWtb6yuPYhQg7oE3dFCvtwuSvN27g");
+declare_id!("s9HvR5Wjd4dg9qkyZ2xVusyffDWjSRK9FYaBEeekvSz");
+
+const ADMIN: Pubkey = pubkey!("i2tZJMMTqrcYv53qdLFsouL1JQPWgKiTfZ6sRDfk7nL");
 
 #[program]
 pub mod voting {
@@ -71,9 +74,11 @@ pub mod voting {
             return Err(ErrorCode::VotingNotStarted.into());
         }
 
-        if mintaddr.key() != pollacc.mint_address {
-            return Err(ErrorCode::InvalidMintAddress.into());
-        }
+        require_keys_eq!(
+            pollacc.mint_address,
+            mintaddr.key(),
+            ErrorCode::InvalidMintAddress
+        );
 
         let transfer_cpi_accounts = TransferChecked {
             from: ctx.accounts.user_token_account.to_account_info(),
@@ -98,7 +103,10 @@ pub mod voting {
 #[derive(Accounts)]
 #[instruction(poll_id: u64)]
 pub struct InitialzePoll<'info> {
-    #[account(mut)]
+    #[account(
+        mut,
+        address = ADMIN @ ErrorCode::Unauthorized,
+    )]
     pub signer: Signer<'info>,
 
     #[account(
@@ -217,4 +225,6 @@ pub enum ErrorCode {
     VotingEnded,
     #[msg("Invalid mint address")]
     InvalidMintAddress,
+    #[msg("Unauthorized signer")]
+    Unauthorized,
 }

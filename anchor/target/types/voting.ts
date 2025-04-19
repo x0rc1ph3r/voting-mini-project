@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/voting.json`.
  */
 export type Voting = {
-  "address": "DqmZ5z1C34ou3pjfWtb6yuPYhQg7oE3dFCvtwuSvN27g",
+  "address": "s9HvR5Wjd4dg9qkyZ2xVusyffDWjSRK9FYaBEeekvSz",
   "metadata": {
     "name": "voting",
     "version": "0.1.0",
@@ -112,7 +112,8 @@ export type Voting = {
         {
           "name": "signer",
           "writable": true,
-          "signer": true
+          "signer": true,
+          "address": "i2tZJMMTqrcYv53qdLFsouL1JQPWgKiTfZ6sRDfk7nL"
         },
         {
           "name": "poll",
@@ -405,6 +406,11 @@ export type Voting = {
       "code": 6002,
       "name": "invalidMintAddress",
       "msg": "Invalid mint address"
+    },
+    {
+      "code": 6003,
+      "name": "unauthorized",
+      "msg": "Unauthorized signer"
     }
   ],
   "types": [

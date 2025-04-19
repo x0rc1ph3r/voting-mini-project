@@ -1,5 +1,5 @@
 {
-  "address": "DqmZ5z1C34ou3pjfWtb6yuPYhQg7oE3dFCvtwuSvN27g",
+  "address": "s9HvR5Wjd4dg9qkyZ2xVusyffDWjSRK9FYaBEeekvSz",
   "metadata": {
     "name": "voting",
     "version": "0.1.0",
@@ -106,7 +106,8 @@
         {
           "name": "signer",
           "writable": true,
-          "signer": true
+          "signer": true,
+          "address": "i2tZJMMTqrcYv53qdLFsouL1JQPWgKiTfZ6sRDfk7nL"
         },
         {
           "name": "poll",
@@ -399,6 +400,11 @@
       "code": 6002,
       "name": "InvalidMintAddress",
       "msg": "Invalid mint address"
+    },
+    {
+      "code": 6003,
+      "name": "Unauthorized",
+      "msg": "Unauthorized signer"
     }
   ],
   "types": [
