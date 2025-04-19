@@ -32,7 +32,7 @@ export default function VotingFeature() {
   }
 
   return publicKey ? (
-    <div className="min-h-screen bg-[url('/bgn.jpeg')] bg-cover bg-center bg-no-repeat bg-fixed text-white flex items-center justify-center font-sans animate-fadeIn">
+    <div className="min-h-screen bg-[url('/bg.jpg')] bg-cover bg-center bg-no-repeat bg-fixed text-white flex items-center justify-center font-sans animate-fadeIn">
       <div className="max-w-xl w-full p-6 rounded-2xl border border-white/10 backdrop-blur-xl bg-white/5 shadow-[0_0_20px_rgba(0,191,255,0.15)] animate-fadeInUp">
         <h1 className="text-4xl text-center text-cyan-400 mb-8 ml-6 drop-shadow-[0_0_20px_#00bfff] animate-fadeInDown">
           Admin Page

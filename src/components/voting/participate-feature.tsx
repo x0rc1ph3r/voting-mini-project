@@ -46,13 +46,7 @@ export default function ParticipateFeature() {
                 <title>Candidate Participation</title>
             </Head>
 
-            <div
-                className="min-h-screen flex flex-col items-center justify-center text-white bg-cover bg-center bg-fixed bg-no-repeat"
-                style={{
-                    backgroundImage:
-                        "linear-gradient(rgba(0,0,20,0.8), rgba(0,0,40,0.8)), url('/bgn.jpeg')",
-                }}
-            >
+            <div className="min-h-screen flex flex-col items-center justify-center text-white bg-[url('/bg.jpg')] bg-cover bg-center bg-fixed bg-no-repeat">
                 <h1 className="text-4xl text-cyan-400 mb-8 text-center drop-shadow-md animate-fadeInDown">
                     Candidate Participation
                 </h1>
