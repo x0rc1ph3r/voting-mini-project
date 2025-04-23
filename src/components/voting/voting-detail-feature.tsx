@@ -56,7 +56,7 @@ export default function PollDetailFeature() {
                                     <h3 className="text-cyan-300 pt-3 text-lg">{c.party}</h3>
                                     <p className="text-gray-300">No.of Votes: {c.votes} votes</p>
                                     <button className="w-fit mt-2 px-4 py-1 bg-cyan-400 text-black font-bold rounded-md hover:-translate-y-1 hover:shadow-[0_0_10px_#00e6e6] transition"
-                                    onClick={() => voteMutation.mutateAsync({candidateName: c.name, pollId: Number(id), mint: "24MejQPSucVCS9gvuJ9TZ1RVvPV3ErnyVpJrD4kggNRf"})} >Vote</button>
+                                    onClick={() => voteMutation.mutateAsync({candidateName: c.name, pollId: Number(id), mint: "VoteCahXMnr5FXRCvQRr7kDtYTDpo348yWmVgcrZpkn"})} >Vote</button>
                                 </div>
                             </div>
                         </div>
